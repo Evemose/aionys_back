@@ -1,12 +1,16 @@
 package org.aionys.notes.controller;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.aionys.notes.dto.notes.GetNoteDTO;
 import org.aionys.notes.dto.notes.NoteMapper;
 import org.aionys.notes.dto.notes.PostNoteDTO;
 import org.aionys.notes.service.notes.NoteService;
+import org.aionys.notes.valiation.groups.Full;
+import org.aionys.notes.valiation.groups.Partial;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -42,7 +46,7 @@ public class NoteController {
     @PatchMapping("/{id}")
     public ResponseEntity<GetNoteDTO> update(
             @PathVariable Long id,
-            @RequestBody PostNoteDTO noteDTO,
+            @RequestBody @Validated(Partial.class) PostNoteDTO noteDTO,
             Principal principal) {
         var entity = noteService.findByIdAndOwner_Username(id, principal.getName())
                 .orElseThrow(EntityNotFoundException::new);
@@ -51,7 +55,7 @@ public class NoteController {
     }
 
     @PostMapping
-    public ResponseEntity<GetNoteDTO> create(@RequestBody PostNoteDTO noteDTO) {
+    public ResponseEntity<GetNoteDTO> create(@RequestBody @Validated(Full.class) PostNoteDTO noteDTO) {
         var entity = noteMapper.toEntity(noteDTO);
         return ResponseEntity.ok(noteMapper.toDto(noteService.save(entity)));
     }
