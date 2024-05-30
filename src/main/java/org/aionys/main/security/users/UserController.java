@@ -17,13 +17,15 @@ class UserController {
 
     private final UserService userService;
 
+    private final UserMapper userMapper;
+
     @PostMapping("/login")
     public ResponseEntity<String> login(Principal principal) {
         return ResponseEntity.ok(jwtEncryptor.encrypt(principal.getName()));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody PostUserDTO dto) {
-       throw new UnsupportedOperationException("Not implemented");
+    public ResponseEntity<GetUserDTO> register(@RequestBody PostUserDTO dto) {
+        return ResponseEntity.ok(userMapper.toDTO(userService.save(userMapper.toEntity(dto))));
     }
 }

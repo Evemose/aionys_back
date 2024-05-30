@@ -24,7 +24,7 @@ class NoteController {
     public ResponseEntity<List<GetNoteDTO>> getAll(Principal principal) {
         return ResponseEntity.ok(
                 noteService.findAllByOwner_Username(principal.getName()).stream()
-                        .map(noteMapper::toDto)
+                        .map(noteMapper::toDTO)
                         .toList()
         );
     }
@@ -33,7 +33,7 @@ class NoteController {
     public ResponseEntity<GetNoteDTO> get(@PathVariable Long id, Principal principal) {
         return ResponseEntity.ok(
                 noteService.findByIdAndOwner_Username(id, principal.getName())
-                        .map(noteMapper::toDto)
+                        .map(noteMapper::toDTO)
                         .orElseThrow(EntityNotFoundException::new)
         );
     }
@@ -46,13 +46,13 @@ class NoteController {
         var entity = noteService.findByIdAndOwner_Username(id, principal.getName())
                 .orElseThrow(EntityNotFoundException::new);
         noteMapper.mapNonNullIntoEntity(noteDTO, entity);
-        return ResponseEntity.ok(noteMapper.toDto(noteService.save(entity)));
+        return ResponseEntity.ok(noteMapper.toDTO(noteService.save(entity)));
     }
 
     @PostMapping
     public ResponseEntity<GetNoteDTO> create(@RequestBody @Validated(Full.class) PostNoteDTO noteDTO) {
         var entity = noteMapper.toEntity(noteDTO);
-        return ResponseEntity.ok(noteMapper.toDto(noteService.save(entity)));
+        return ResponseEntity.ok(noteMapper.toDTO(noteService.save(entity)));
     }
 
     @DeleteMapping("/{id}")

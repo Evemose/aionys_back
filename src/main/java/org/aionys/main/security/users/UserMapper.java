@@ -1,5 +1,6 @@
-package org.aionys.main.notes;
+package org.aionys.main.security.users;
 
+import org.aionys.main.notes.Note;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -7,12 +8,11 @@ import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
-interface NoteMapper {
+interface UserMapper {
+    GetUserDTO toDTO(User user);
 
-    GetNoteDTO toDTO(Note entity);
-
-    Note toEntity(PostNoteDTO dto);
+    User toEntity(PostUserDTO userDto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = org.mapstruct.NullValuePropertyMappingStrategy.IGNORE)
-    void mapNonNullIntoEntity(PostNoteDTO dto, @MappingTarget Note base);
+    void mapNonNullIntoEntity(PostUserDTO dto, @MappingTarget Note base);
 }
