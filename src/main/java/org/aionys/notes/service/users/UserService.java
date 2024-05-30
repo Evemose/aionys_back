@@ -1,4 +1,4 @@
-package org.aionys.notes.service;
+package org.aionys.notes.service.users;
 
 import org.aionys.notes.persistence.model.entity.User;
 

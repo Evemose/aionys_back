@@ -1,4 +1,4 @@
-package org.aionys.notes.service;
+package org.aionys.notes.service.users;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;

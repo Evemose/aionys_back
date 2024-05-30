@@ -14,12 +14,6 @@ public interface NoteMapper {
 
     Note toEntity(PostNoteDTO dto);
 
-    /**
-     * Maps the given note to a GetNoteDTO. Ignores null values in dto.
-     *
-     * @param dto  the dto
-     * @param base the base note
-     */
     @BeanMapping(nullValuePropertyMappingStrategy = org.mapstruct.NullValuePropertyMappingStrategy.IGNORE)
-    void toEntity(PostNoteDTO dto, @MappingTarget Note base);
+    void mapNonNullIntoEntity(PostNoteDTO dto, @MappingTarget Note base);
 }
