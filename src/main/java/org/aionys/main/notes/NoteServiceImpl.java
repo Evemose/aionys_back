@@ -14,6 +14,11 @@ class NoteServiceImpl implements NoteService {
     private final NoteRepository noteRepository;
 
     @Override
+    public Note save(Note note) {
+        return noteRepository.saveAndFlush(note);  // save so entity is audited
+    }
+
+    @Override
     public void deleteByIdAndOwner_Username(Long id, String username) {
         if (noteRepository.existsByIdAndOwner_Username(id, username)) {
             noteRepository.deleteById(id);

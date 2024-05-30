@@ -2,8 +2,8 @@ package org.aionys.main.notes;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.aionys.main.valiation.groups.Full;
-import org.aionys.main.valiation.groups.Partial;
+import org.aionys.main.commons.valiation.groups.Full;
+import org.aionys.main.commons.valiation.groups.Partial;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

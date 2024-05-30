@@ -1,4 +1,4 @@
-package org.aionys.main.valiation.annotations;
+package org.aionys.main.commons.valiation.annotations;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

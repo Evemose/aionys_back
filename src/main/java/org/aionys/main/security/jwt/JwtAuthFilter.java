@@ -32,13 +32,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         var token = request.getHeader("Authorization");
         if (token != null && token.startsWith("Bearer ")) {
             var jwt = token.substring(7);
-            String username;
-            try {
-                username = jwtService.decrypt(jwt);
-            } catch (TokenExpiredException e) {
-                filterChain.doFilter(request, response); // let auth fail downstream
-                return;
-            }
+            var username = jwtService.decrypt(jwt);
             var user = userDetailsService.loadUserByUsername(username);
             SecurityContextHolder.getContext().setAuthentication(
                     new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())

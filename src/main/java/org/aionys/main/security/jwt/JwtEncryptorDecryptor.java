@@ -30,14 +30,10 @@ class JwtEncryptorDecryptor implements JwtEncryptor, JwtDecryptor {
     }
 
     @Override
-    public String decrypt(String token) throws TokenExpiredException {
+    public String decrypt(String token) {
         var parser = Jwts.parser()
                 .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
                 .build();
-        var body = parser.parseSignedClaims(token).getPayload();
-        if (body.getExpiration().before(new Date())) {
-            throw new TokenExpiredException();
-        }
-        return body.getSubject();
+        return parser.parseSignedClaims(token).getPayload().getSubject();
     }
 }

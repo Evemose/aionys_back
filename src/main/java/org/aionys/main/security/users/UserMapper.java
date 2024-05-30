@@ -1,18 +1,20 @@
 package org.aionys.main.security.users;
 
 import org.aionys.main.notes.Note;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
-interface UserMapper {
-    GetUserDTO toDTO(User user);
+abstract class UserMapper {
+    abstract GetUserDTO toDTO(User user);
 
-    User toEntity(PostUserDTO userDto);
+    abstract User toEntity(PostUserDTO userDto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = org.mapstruct.NullValuePropertyMappingStrategy.IGNORE)
-    void mapNonNullIntoEntity(PostUserDTO dto, @MappingTarget Note base);
+    abstract void mapNonNullIntoEntity(PostUserDTO dto, @MappingTarget Note base);
+
+    @ObjectFactory
+    protected User createEntity(PostUserDTO dto) {
+        return new User(dto.username(), dto.password());
+    }
 }
