@@ -1,4 +1,4 @@
-package org.aionys.notes.model.entity;
+package org.aionys.notes.persistence.model.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

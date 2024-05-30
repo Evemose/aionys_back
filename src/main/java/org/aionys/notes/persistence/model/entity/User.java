@@ -1,4 +1,4 @@
-package org.aionys.notes.model.entity;
+package org.aionys.notes.persistence.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

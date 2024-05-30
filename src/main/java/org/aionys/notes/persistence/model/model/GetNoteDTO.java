@@ -1,4 +1,4 @@
-package org.aionys.notes.model.model;
+package org.aionys.notes.persistence.model.model;
 
 public record GetNoteDTO(
         Long id,
