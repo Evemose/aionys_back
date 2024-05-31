@@ -17,11 +17,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 public final class RequestBuilder {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    private Object body;
-
     private final MockMvc mockMvc;
-
+    private Object body;
     private String credentialsAsBase;
 
     private CompletableFuture<String> bearer;
@@ -29,20 +26,6 @@ public final class RequestBuilder {
     private Authorization authorization = Authorization.BEARER;
 
     private boolean authorize = false;
-
-    public record Credentials(String username, String password) {
-        public Credentials {
-            if (username == null || password == null) {
-                throw new IllegalArgumentException("Username and password must not be null.");
-            }
-        }
-
-        public static final Credentials VALID_CREDENTIALS = new Credentials("user1", "123Ffg%1!");
-    }
-
-    public enum Authorization {
-        BEARER, BASIC
-    }
 
     public RequestBuilder(MockMvc mockMvc) {
         this.mockMvc = mockMvc;
@@ -119,5 +102,19 @@ public final class RequestBuilder {
             requestBuilder.content(objectMapper.writeValueAsString(body));
         }
         return mockMvc.perform(requestBuilder);
+    }
+
+    public enum Authorization {
+        BEARER, BASIC
+    }
+
+    public record Credentials(String username, String password) {
+        public static final Credentials VALID_CREDENTIALS = new Credentials("user1", "123Ffg%1!");
+
+        public Credentials {
+            if (username == null || password == null) {
+                throw new IllegalArgumentException("Username and password must not be null.");
+            }
+        }
     }
 }

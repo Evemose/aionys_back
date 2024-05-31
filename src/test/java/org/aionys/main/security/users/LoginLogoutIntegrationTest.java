@@ -37,55 +37,11 @@ public class LoginLogoutIntegrationTest {
     @Autowired
     private JwtDecryptor jwtDecryptor;
 
-    @Test
-    public void testLogin_WhenUserExists_ThenReturnToken() throws Exception {
-        var receivedToken = new RequestBuilder(mockMvc)
-                .authorization(RequestBuilder.Authorization.BASIC)
-                .credentials(VALID_CREDENTIALS)
-                .perform(post("/login"))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        assertEquals(VALID_CREDENTIALS.username(), jwtDecryptor.extractUsername(receivedToken));
-    }
-
     private static Stream<Arguments> invalidCredentialsAndExplanation() {
         return Stream.of(
                 Arguments.of(new Credentials(VALID_CREDENTIALS.username(), "wrong"), "Invalid password"),
                 Arguments.of(new Credentials("wrong", "admin"), "Invalid username")
         );
-    }
-
-    @ParameterizedTest
-    @MethodSource("invalidCredentialsAndExplanation")
-    public void testLogin_WhenUserDoesNotExist_ThenReturnUnauthorized(
-            Credentials credentials, String explanation
-    ) throws Exception {
-        new RequestBuilder(mockMvc)
-                .authorization(RequestBuilder.Authorization.BASIC)
-                .credentials(credentials)
-                .perform(post("/login"))
-                .andExpect(result -> assertEquals(401, result.getResponse().getStatus(), explanation));
-    }
-
-    @Test
-    @DirtiesContext
-    public void testRegister_WhenUserDoesNotExist_ThenOk() throws Exception {
-        new RequestBuilder(mockMvc)
-                .body(new PostUserDTO("new", VALID_CREDENTIALS.password()))
-                .perform(post("/register"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @DirtiesContext
-    public void testRegister_WhenLoggedIn_ThenForbidden() throws Exception {
-        new RequestBuilder(mockMvc)
-                .authorization(RequestBuilder.Authorization.BASIC)
-                .credentials(VALID_CREDENTIALS)
-                .body(new Credentials("new", VALID_CREDENTIALS.password()))
-                .perform(post("/register"))
-                .andExpect(status().isForbidden());
     }
 
     public static Stream<Arguments> invalidRegisterData() {
@@ -134,6 +90,50 @@ public class LoginLogoutIntegrationTest {
                         ), HttpStatus.BAD_REQUEST
                 )
         );
+    }
+
+    @Test
+    public void testLogin_WhenUserExists_ThenReturnToken() throws Exception {
+        var receivedToken = new RequestBuilder(mockMvc)
+                .authorization(RequestBuilder.Authorization.BASIC)
+                .credentials(VALID_CREDENTIALS)
+                .perform(post("/login"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertEquals(VALID_CREDENTIALS.username(), jwtDecryptor.extractUsername(receivedToken));
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidCredentialsAndExplanation")
+    public void testLogin_WhenUserDoesNotExist_ThenReturnUnauthorized(
+            Credentials credentials, String explanation
+    ) throws Exception {
+        new RequestBuilder(mockMvc)
+                .authorization(RequestBuilder.Authorization.BASIC)
+                .credentials(credentials)
+                .perform(post("/login"))
+                .andExpect(result -> assertEquals(401, result.getResponse().getStatus(), explanation));
+    }
+
+    @Test
+    @DirtiesContext
+    public void testRegister_WhenUserDoesNotExist_ThenOk() throws Exception {
+        new RequestBuilder(mockMvc)
+                .body(new PostUserDTO("new", VALID_CREDENTIALS.password()))
+                .perform(post("/register"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DirtiesContext
+    public void testRegister_WhenLoggedIn_ThenForbidden() throws Exception {
+        new RequestBuilder(mockMvc)
+                .authorization(RequestBuilder.Authorization.BASIC)
+                .credentials(VALID_CREDENTIALS)
+                .body(new Credentials("new", VALID_CREDENTIALS.password()))
+                .perform(post("/register"))
+                .andExpect(status().isForbidden());
     }
 
     @ParameterizedTest

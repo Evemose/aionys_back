@@ -31,12 +31,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class NoteIntegrationTest {
 
+    private static final String CONTROLLER_PATH = "/notes";
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private MockMvc mockMvc;
-
-    private static final String CONTROLLER_PATH = "/notes";
-
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private static List<Credentials> credentialsSource() {
         return List.of(
@@ -72,6 +70,18 @@ public class NoteIntegrationTest {
                 ));
     }
 
+    private static Stream<Arguments> invalidNotesAndErrors() {
+        return Stream.of(
+                Arguments.of(
+                        new PostNoteDTO("", "Content"),
+                        List.of(new FieldError("must not be blank", "title", ""))
+                ),
+                Arguments.of(
+                        new PostNoteDTO("Title", "   "),
+                        List.of(new FieldError("must not be blank", "content", "   "))
+                )
+        );
+    }
 
     @ParameterizedTest
     @SuppressWarnings("all") // suppress warning about record exposed beyond visibility scope
@@ -168,19 +178,6 @@ public class NoteIntegrationTest {
                 .credentials(VALID_CREDENTIALS)
                 .perform(delete(CONTROLLER_PATH + "/" + id))
                 .andExpect(result -> assertEquals(404, result.getResponse().getStatus(), reason));
-    }
-
-    private static Stream<Arguments> invalidNotesAndErrors() {
-        return Stream.of(
-                Arguments.of(
-                        new PostNoteDTO("", "Content"),
-                        List.of(new FieldError("must not be blank", "title", ""))
-                ),
-                Arguments.of(
-                        new PostNoteDTO("Title", "   "),
-                        List.of(new FieldError("must not be blank", "content", "   "))
-                )
-        );
     }
 
     @ParameterizedTest
