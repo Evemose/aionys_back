@@ -34,7 +34,7 @@ class NoteController {
         return ResponseEntity.ok(
                 noteService.findByIdAndOwner_Username(id, principal.getName())
                         .map(noteMapper::toDTO)
-                        .orElseThrow(EntityNotFoundException::new)
+                        .orElseThrow(() -> new EntityNotFoundException("Note with id %d not found".formatted(id)))
         );
     }
 
@@ -44,7 +44,7 @@ class NoteController {
             @RequestBody @Validated(Partial.class) PostNoteDTO noteDTO,
             Principal principal) {
         var entity = noteService.findByIdAndOwner_Username(id, principal.getName())
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> new EntityNotFoundException("Note with id %d not found".formatted(id)));
         noteMapper.mapNonNullIntoEntity(noteDTO, entity);
         return ResponseEntity.ok(noteMapper.toDTO(noteService.save(entity)));
     }

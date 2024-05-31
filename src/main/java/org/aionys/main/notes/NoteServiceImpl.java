@@ -23,7 +23,7 @@ class NoteServiceImpl implements NoteService {
         if (noteRepository.existsByIdAndOwner_Username(id, username)) {
             noteRepository.deleteById(id);
         } else {
-            throw new EntityNotFoundException();
+            throw new EntityNotFoundException("Note with id %d not found".formatted(id));
         }
     }
 
