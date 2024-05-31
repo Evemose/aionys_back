@@ -3,7 +3,7 @@ package org.aionys.main.commons.valiation.annotations;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-class PasswordValidator implements ConstraintValidator<Password, String> {
+public class PasswordValidator implements ConstraintValidator<Password, String> {
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
