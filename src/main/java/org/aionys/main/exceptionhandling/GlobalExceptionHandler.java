@@ -2,25 +2,27 @@ package org.aionys.main.exceptionhandling;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 @RestControllerAdvice("org.aionys.main")
+@Slf4j
 public class GlobalExceptionHandler {
-
-    public record FieldError(String message, String field, String value) {
-    }
 
     // This method is used to handle the exception when a unique constraint is violated
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<FieldError> handleDataIntegrityViolationException(
             DataIntegrityViolationException e
     ) {
+        log.warn("Data integrity violation", e);
         if (e.getMessage().contains(" unique ")) {
             var pattern = Pattern.compile("\\(\\w+\\)");
             var matcher = pattern.matcher(e.getMessage());
@@ -39,18 +41,34 @@ public class GlobalExceptionHandler {
 
     // TODO: Replace parameter name with underscore when upgraded to Java 22 or above
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Void> handleEntityNotFoundException(EntityNotFoundException ignored) {
+    public ResponseEntity<Void> handleEntityNotFoundException(EntityNotFoundException e) {
+        log.warn(e.getMessage());
         return ResponseEntity.notFound().build();
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<List<FieldError>> handleConstraintViolationException(ConstraintViolationException e) {
+        log.warn("Validation failed", e);
         return ResponseEntity.badRequest().body(
                 e.getConstraintViolations().stream().map(
                         violation -> new FieldError(
                                 violation.getMessage(),
                                 violation.getPropertyPath().toString(),
                                 violation.getInvalidValue().toString()
+                        )
+                ).toList()
+        );
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<List<FieldError>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        log.warn("Validation failed", e);
+        return ResponseEntity.badRequest().body(
+                e.getBindingResult().getFieldErrors().stream().map(
+                        error -> new FieldError(
+                                error.getDefaultMessage(),
+                                error.getField(),
+                                Objects.toString(error.getRejectedValue())
                         )
                 ).toList()
         );
