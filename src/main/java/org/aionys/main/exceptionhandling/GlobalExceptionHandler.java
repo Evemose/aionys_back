@@ -1,0 +1,58 @@
+package org.aionys.main.exceptionhandling;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.List;
+import java.util.regex.Pattern;
+
+@RestControllerAdvice("org.aionys.main")
+public class GlobalExceptionHandler {
+
+    public record FieldError(String message, String field, String value) {
+    }
+
+    // This method is used to handle the exception when a unique constraint is violated
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<FieldError> handleDataIntegrityViolationException(
+            DataIntegrityViolationException e
+    ) {
+        if (e.getMessage().contains(" unique ")) {
+            var pattern = Pattern.compile("\\(\\w+\\)");
+            var matcher = pattern.matcher(e.getMessage());
+            if (matcher.find()) {
+                var field = matcher.group().substring(1, matcher.group().length() - 1);
+                if (matcher.find()) {
+                    var value = matcher.group().substring(1, matcher.group().length() - 1);
+                    return ResponseEntity.badRequest().body(
+                            new FieldError("Object with %s=%s already exists".formatted(field, value), field, value)
+                    );
+                }
+            }
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
+    // TODO: Replace parameter name with underscore when upgraded to Java 22 or above
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Void> handleEntityNotFoundException(EntityNotFoundException ignored) {
+        return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<List<FieldError>> handleConstraintViolationException(ConstraintViolationException e) {
+        return ResponseEntity.badRequest().body(
+                e.getConstraintViolations().stream().map(
+                        violation -> new FieldError(
+                                violation.getMessage(),
+                                violation.getPropertyPath().toString(),
+                                violation.getInvalidValue().toString()
+                        )
+                ).toList()
+        );
+    }
+}
