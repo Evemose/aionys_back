@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class GlobalExceptionHandler {
 
     // This method is used to handle the exception when a unique constraint is violated
     @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ResponseEntity<FieldError> handleDataIntegrityViolationException(
             org.hibernate.exception.ConstraintViolationException e
     ) {
@@ -42,12 +44,14 @@ public class GlobalExceptionHandler {
 
     // TODO: Replace parameter name with underscore when upgraded to Java 22 or above
     @ExceptionHandler(EntityNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<Void> handleEntityNotFoundException(EntityNotFoundException e) {
         log.warn(e.getMessage());
         return ResponseEntity.notFound().build();
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<List<FieldError>> handleConstraintViolationException(ConstraintViolationException e) {
         log.warn("Validation failed: {}", e.getMessage());
         return ResponseEntity.badRequest().body(
@@ -62,6 +66,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<List<FieldError>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.warn("Method arguments validation failed: {}", e.getMessage());
         return ResponseEntity.badRequest().body(
