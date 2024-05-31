@@ -11,8 +11,6 @@ record PostUserDTO(
         @NullOrNotBlank(groups = Partial.class)
         String username,
 
-        @NotBlank(groups = Full.class)
-        @NullOrNotBlank(groups = Partial.class)
         @Password(groups = {Full.class, Partial.class})
         String password
 ) {
