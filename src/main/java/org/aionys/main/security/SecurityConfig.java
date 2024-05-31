@@ -15,8 +15,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Configuration
-@Profile({"prod", "test-prod"})
-@EnableWebSecurity
 @RequiredArgsConstructor
 class SecurityConfig {
 

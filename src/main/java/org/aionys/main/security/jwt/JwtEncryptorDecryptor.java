@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 
 @Component
-@Profile({"prod", "test-prod"})
 class JwtEncryptorDecryptor implements JwtEncryptor, JwtDecryptor {
 
     @Value("${jwt.secret}")

@@ -17,7 +17,6 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
-@Profile({"prod", "test-prod"})
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtDecryptor jwtService;
