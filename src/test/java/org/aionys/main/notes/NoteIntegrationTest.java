@@ -21,6 +21,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.aionys.main.utils.RequestBuilder.Credentials;
+import static org.aionys.main.utils.RequestBuilder.Credentials.VALID_CREDENTIALS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -36,8 +37,6 @@ public class NoteIntegrationTest {
     private static final String CONTROLLER_PATH = "/notes";
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    private static final Credentials VALID_CREDENTIALS = new Credentials("user1", "123Ffg%1!");
 
     private static List<Credentials> credentialsSource() {
         return List.of(
