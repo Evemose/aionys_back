@@ -15,6 +15,11 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @RequiredArgsConstructor
 class SecurityConfig {
 
+    private static final String[] SWAGGER_ENDPOINTS = {
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+    };
+
     private final JwtAuthFilter jwtAuthFilter;
 
     @Bean
@@ -28,7 +33,7 @@ class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers("/register").permitAll()
-                                .requestMatchers("/swagger-ui/**").permitAll()
+                                .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
                                 .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)

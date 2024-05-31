@@ -25,6 +25,6 @@ public class SecurityAuditorAware implements AuditorAware<User> {
             return Optional.empty();
         }
 
-        return Optional.of((User) userDetailsService.loadUserByUsername(authentication.getName()));
+        return Optional.of((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
     }
 }

@@ -1,5 +1,6 @@
 package org.aionys.main.security.users;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,6 +29,11 @@ class UserController {
 
     @PostMapping("/login")
     @SecurityRequirement(name = "basicAuth")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User logged in successfully"),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials")
+    })
+    @Operation(summary = "Log in")
     public ResponseEntity<String> login(Principal principal) {
         return ResponseEntity.ok(jwtEncryptor.encrypt(principal.getName()));
     }
@@ -38,6 +44,7 @@ class UserController {
             @ApiResponse(responseCode = "403", description = "User already logged in")
     })
     @SecurityRequirements
+    @Operation(summary = "Register a new user")
     public ResponseEntity<GetUserDTO> register(
             @RequestBody @Validated(Full.class) PostUserDTO dto,
             Principal principal) {

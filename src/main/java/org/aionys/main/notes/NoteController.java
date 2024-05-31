@@ -1,5 +1,8 @@
 package org.aionys.main.notes;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.aionys.main.commons.valiation.groups.Full;
@@ -21,6 +24,7 @@ class NoteController {
     private final NoteMapper noteMapper;
 
     @GetMapping
+    @Operation(summary = "Get all notes of the user")
     public ResponseEntity<List<GetNoteDTO>> getAll(Principal principal) {
         return ResponseEntity.ok(
                 noteService.findAllByOwner_Username(principal.getName()).stream()
@@ -30,6 +34,7 @@ class NoteController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get a note by id")
     public ResponseEntity<GetNoteDTO> get(@PathVariable Long id, Principal principal) {
         return ResponseEntity.ok(
                 noteService.findByIdAndOwner_Username(id, principal.getName())
@@ -39,6 +44,7 @@ class NoteController {
     }
 
     @PatchMapping("/{id}")
+    @Operation(summary = "Perform a partial update of a note")
     public ResponseEntity<GetNoteDTO> update(
             @PathVariable Long id,
             @RequestBody @Validated(Partial.class) PostNoteDTO noteDTO,
@@ -50,12 +56,14 @@ class NoteController {
     }
 
     @PostMapping
+    @Operation(summary = "Create a new note")
     public ResponseEntity<GetNoteDTO> create(@RequestBody @Validated(Full.class) PostNoteDTO noteDTO) {
         var entity = noteMapper.toEntity(noteDTO);
         return ResponseEntity.ok(noteMapper.toDTO(noteService.save(entity)));
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a note by id")
     public ResponseEntity<Void> delete(@PathVariable Long id, Principal principal) {
         noteService.deleteByIdAndOwner_Username(id, principal.getName());
         return ResponseEntity.noContent().build();
