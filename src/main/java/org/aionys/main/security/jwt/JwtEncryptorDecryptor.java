@@ -29,7 +29,7 @@ class JwtEncryptorDecryptor implements JwtEncryptor, JwtDecryptor {
     }
 
     @Override
-    public String decrypt(String token) {
+    public String extractUsername(String token) {
         var parser = Jwts.parser()
                 .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
                 .build();

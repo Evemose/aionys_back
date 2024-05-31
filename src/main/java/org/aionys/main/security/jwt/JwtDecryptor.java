@@ -1,5 +1,5 @@
 package org.aionys.main.security.jwt;
 
 public interface JwtDecryptor {
-    String decrypt(String token);
+    String extractUsername(String token);
 }
