@@ -13,7 +13,7 @@ record PostUserDTO(
 
         @NotBlank(groups = Full.class)
         @NullOrNotBlank(groups = Partial.class)
-        @Password
+        @Password(groups = {Full.class, Partial.class})
         String password
 ) {
 }

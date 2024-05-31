@@ -1,8 +1,10 @@
 package org.aionys.main.security.users;
 
 import lombok.RequiredArgsConstructor;
+import org.aionys.main.commons.valiation.groups.Full;
 import org.aionys.main.security.jwt.JwtEncryptor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,7 +27,7 @@ class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<GetUserDTO> register(@RequestBody PostUserDTO dto) {
+    public ResponseEntity<GetUserDTO> register(@RequestBody @Validated(Full.class) PostUserDTO dto) {
         return ResponseEntity.ok(userMapper.toDTO(userService.save(userMapper.toEntity(dto))));
     }
 }

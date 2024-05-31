@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.aionys.main.commons.valiation.annotations.Password;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -31,9 +30,9 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String username;
 
+    // password is already hashed using bcrypt here, so @Password annotation does not make sense
     @NotBlank
     @NonNull
-    @Password
     private String password;
 
     private boolean enabled = true;
