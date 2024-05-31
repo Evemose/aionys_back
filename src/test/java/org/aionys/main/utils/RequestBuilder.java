@@ -22,7 +22,13 @@ public final class RequestBuilder {
 
     private final MockMvc mockMvc;
 
+    private String credentialsAsBase;
+
     private CompletableFuture<String> bearer;
+
+    private Authorization authorization = Authorization.BEARER;
+
+    private boolean authorize = false;
 
     public record Credentials(String username, String password) {
         public Credentials {
@@ -30,6 +36,12 @@ public final class RequestBuilder {
                 throw new IllegalArgumentException("Username and password must not be null.");
             }
         }
+
+        public static final Credentials VALID_CREDENTIALS = new Credentials("user1", "123Ffg%1!");
+    }
+
+    public enum Authorization {
+        BEARER, BASIC
     }
 
     public RequestBuilder(MockMvc mockMvc) {
@@ -44,31 +56,50 @@ public final class RequestBuilder {
     }
 
     public RequestBuilder credentials(@NonNull Credentials credentials) {
+        this.authorize = true;
         if (bearer != null) {
             log.warn("Credentials have been already set. They will be overridden.");
+            clearBearer();
         }
-        clearBearer();
-        retrieveBearer(credentials);
+        this.credentialsAsBase = "Basic " + Base64.getEncoder().encodeToString((
+                credentials.username + ":" + credentials.password
+        ).getBytes());
+        if (authorization == Authorization.BEARER) {
+            retrieveBearer();
+        }
         return this;
     }
 
-    private void retrieveBearer(Credentials credentials) {
-        var authHeaderContent = "Basic " + Base64.getEncoder().encodeToString((
-                credentials.username + ":" + credentials.password
-        ).getBytes());
+    public RequestBuilder authorization(@NonNull Authorization authorization) {
+        if (bearer != null && authorization != Authorization.BEARER) {
+            log.warn("Authorization type has already been set to bearer. It will be overridden.");
+            clearBearer();
+        }
+        this.authorization = authorization;
+        return this;
+    }
+
+    private void retrieveBearer() {
         bearer = CompletableFuture.supplyAsync(
                 () -> {
                     try {
                         return mockMvc.perform(post("/login")
                                 .header(
                                         HttpHeaders.AUTHORIZATION,
-                                        authHeaderContent
+                                        credentialsAsBase
                                 )).andReturn().getResponse().getContentAsString();
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 }
         );
+    }
+
+    private String getAuthorizationHeader() throws Exception {
+        return switch (authorization) {
+            case BEARER -> "Bearer " + bearer.get();
+            case BASIC -> credentialsAsBase;
+        };
     }
 
     public RequestBuilder body(Object body) {
@@ -80,8 +111,8 @@ public final class RequestBuilder {
     }
 
     public ResultActions perform(MockHttpServletRequestBuilder requestBuilder) throws Exception {
-        if (bearer != null) {
-            requestBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer.get());
+        if (authorize) {
+            requestBuilder.header(HttpHeaders.AUTHORIZATION, getAuthorizationHeader());
         }
         if (body != null) {
             requestBuilder.contentType("application/json");
