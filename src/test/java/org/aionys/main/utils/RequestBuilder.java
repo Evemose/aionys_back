@@ -1,6 +1,7 @@
 package org.aionys.main.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -8,8 +9,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -21,7 +24,7 @@ public final class RequestBuilder {
     private Object body;
     private String credentialsAsBase;
 
-    private CompletableFuture<String> bearer;
+    private CompletableFuture<Cookie[]> authCookies;
 
     private Authorization authorization = Authorization.BEARER;
 
@@ -32,9 +35,9 @@ public final class RequestBuilder {
     }
 
     private void clearBearer() {
-        if (bearer != null) {
-            bearer.cancel(true);
-            bearer = null;
+        if (authCookies != null) {
+            authCookies.cancel(true);
+            authCookies = null;
         }
     }
 
@@ -42,12 +45,13 @@ public final class RequestBuilder {
      * Sets the credentials for the request. If the credentials are already set, they will be overridden.
      * If the authorization type is set to bearer, the request will be sent
      * to the /login endpoint to retrieve the bearer token.
+     *
      * @param credentials the credentials
      * @return this builder
      */
     public RequestBuilder credentials(@NonNull Credentials credentials) {
         this.authorize = true;
-        if (bearer != null) {
+        if (authCookies != null) {
             log.warn("Credentials have been already set. They will be overridden.");
             clearBearer();
         }
@@ -62,27 +66,37 @@ public final class RequestBuilder {
 
     /**
      * Sets the authorization type. If the authorization type is already set to bearer, it will be overridden.
+     *
      * @param authorization the authorization type
      * @return this builder
      */
     public RequestBuilder authorization(@NonNull Authorization authorization) {
-        if (bearer != null && authorization != Authorization.BEARER) {
+        if (authCookies != null && authorization != Authorization.BEARER) {
             log.warn("Authorization type has already been set to bearer. It will be overridden.");
             clearBearer();
+        }
+        if (authorization == Authorization.BEARER) {
+            retrieveBearer();
         }
         this.authorization = authorization;
         return this;
     }
 
     private void retrieveBearer() {
-        bearer = CompletableFuture.supplyAsync(
+        authCookies = CompletableFuture.supplyAsync(
                 () -> {
                     try {
                         return mockMvc.perform(post("/login")
-                                .header(
-                                        HttpHeaders.AUTHORIZATION,
-                                        credentialsAsBase
-                                )).andReturn().getResponse().getContentAsString();
+                                        .header(
+                                                HttpHeaders.AUTHORIZATION,
+                                                credentialsAsBase
+                                        )).andReturn().getResponse().getHeaders(HttpHeaders.SET_COOKIE)
+                                .stream()
+                                .flatMap(header -> Arrays.stream(header.split(";")))
+                                .filter(e -> e.matches("Bearer[a-zA-Z]+=.*"))
+                                .map(e -> e.split("="))
+                                .map(e -> new Cookie(e[0], e[1]))
+                                .toArray(Cookie[]::new);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -90,15 +104,9 @@ public final class RequestBuilder {
         );
     }
 
-    private String getAuthorizationHeader() throws Exception {
-        return switch (authorization) {
-            case BEARER -> "Bearer " + bearer.get();
-            case BASIC -> credentialsAsBase;
-        };
-    }
-
     /**
      * Sets the body for the request. If the body is already set, it will be overridden.
+     *
      * @param body the body
      * @return this builder
      */
@@ -112,19 +120,28 @@ public final class RequestBuilder {
 
     /**
      * Performs the request.
+     *
      * @param requestBuilder the request builder
      * @return the result actions
      * @throws Exception if an during the request occurs
      */
     public ResultActions perform(MockHttpServletRequestBuilder requestBuilder) throws Exception {
         if (authorize) {
-            requestBuilder.header(HttpHeaders.AUTHORIZATION, getAuthorizationHeader());
+            appendAuth(requestBuilder);
         }
         if (body != null) {
             requestBuilder.contentType("application/json");
             requestBuilder.content(objectMapper.writeValueAsString(body));
         }
         return mockMvc.perform(requestBuilder);
+    }
+
+    private void appendAuth(MockHttpServletRequestBuilder requestBuilder) throws InterruptedException, ExecutionException {
+        if (authorization == Authorization.BEARER) {
+            requestBuilder.cookie(authCookies.get());
+        } else {
+            requestBuilder.header(HttpHeaders.AUTHORIZATION, credentialsAsBase);
+        }
     }
 
     public enum Authorization {
