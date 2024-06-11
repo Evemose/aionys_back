@@ -1,8 +1,6 @@
 package org.aionys.main.notes;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.aionys.main.commons.valiation.groups.Full;
@@ -11,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.security.Principal;
 import java.util.List;
 
@@ -59,7 +58,8 @@ class NoteController {
     @Operation(summary = "Create a new note")
     public ResponseEntity<GetNoteDTO> create(@RequestBody @Validated(Full.class) PostNoteDTO noteDTO) {
         var entity = noteMapper.toEntity(noteDTO);
-        return ResponseEntity.ok(noteMapper.toDTO(noteService.save(entity)));
+        var saved = noteService.save(entity);
+        return ResponseEntity.created(URI.create("/notes/" + saved.getId())).body(noteMapper.toDTO(saved));
     }
 
     @DeleteMapping("/{id}")

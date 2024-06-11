@@ -7,5 +7,5 @@ public interface UserService {
 
     Optional<User> findByUsername(String username);
 
-    void deleteById(Long id);
+    void deleteByUsername(String username);
 }

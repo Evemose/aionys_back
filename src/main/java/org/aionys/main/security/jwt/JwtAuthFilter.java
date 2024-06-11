@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,6 +23,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
 
+    private final Environment environment;
+
     @Override
     public boolean shouldNotFilter(HttpServletRequest request) {
         return request.getRequestURI().equals("/register") || request.getRequestURI().equals("/login");
@@ -32,9 +35,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
-        var token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer ")) {
-            var jwt = token.substring(7);
+        String auth = null;
+        if (environment.matchesProfiles("dev")) {
+            auth = request.getHeader("Authorization");
+        }
+        if (auth == null) {
+            auth = getBearerFromCookies(request);
+        }
+        if (auth != null && auth.startsWith("Bearer ")) {
+            var jwt = auth.substring(7);
             var username = jwtService.extractUsername(jwt);
             var user = userDetailsService.loadUserByUsername(username);
             SecurityContextHolder.getContext().setAuthentication(
@@ -42,5 +51,32 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             );
         }
         filterChain.doFilter(request, response);
+    }
+
+    // currently the bearer consists of two cookies, this method is used to combine them
+    private static String getBearerFromCookies(HttpServletRequest request) {
+        var cookies = request.getCookies();
+        StringBuilder tokenBuilder = null;
+        if (cookies != null) {
+            tokenBuilder = new StringBuilder();
+            String tailIfEncountered = null;
+            for (var c : cookies) {
+                if (c.getName().equals("BearerHead")) {
+                    tokenBuilder.append(c.getValue());
+                    if (tailIfEncountered != null) {
+                        tokenBuilder.append(tailIfEncountered);
+                        break;
+                    }
+                } else if (c.getName().equals("BearerTail")) {
+                    if (tokenBuilder.isEmpty()) {
+                        tailIfEncountered = c.getValue();
+                    } else {
+                        tokenBuilder.append(c.getValue());
+                        break;
+                    }
+                }
+            }
+        }
+        return tokenBuilder == null ? null : tokenBuilder.insert(0, "Bearer ").toString();
     }
 }

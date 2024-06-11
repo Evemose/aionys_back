@@ -1,15 +1,16 @@
 package org.aionys.main.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.aionys.main.security.jwt.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @RequiredArgsConstructor
@@ -29,7 +30,14 @@ class SecurityConfig {
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable) // TODO: configure CORS properly
+                .cors(corsConfig -> corsConfig.configurationSource(cors -> {
+                    var corsConfiguration = new CorsConfiguration();
+                    corsConfiguration.addAllowedOriginPattern("*");
+                    corsConfiguration.addAllowedMethod(CorsConfiguration.ALL);
+                    corsConfiguration.addAllowedHeader(CorsConfiguration.ALL);
+                    corsConfiguration.setAllowCredentials(true);
+                    return corsConfiguration;
+                })) // TODO: configure CORS properly
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers("/register").permitAll()
@@ -37,7 +45,11 @@ class SecurityConfig {
                                 .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(Customizer.withDefaults())
+                .httpBasic(basicSecurityConf -> basicSecurityConf.authenticationEntryPoint(
+                        (request, response, authException) ->
+                                response.sendError(
+                                        HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage())
+                ))
                 .anonymous(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtAuthFilter, BasicAuthenticationFilter.class)
                 .build();
