@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aionys.main.exceptionhandling.FieldError;
 import org.aionys.main.security.jwt.JwtDecryptor;
 import org.aionys.main.utils.RequestBuilder;
+import org.aionys.main.utils.RequestUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -11,6 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
@@ -94,14 +96,23 @@ public class LoginLogoutIntegrationTest {
 
     @Test
     public void testLogin_WhenUserExists_ThenReturnToken() throws Exception {
-        var receivedToken = new RequestBuilder(mockMvc)
+        var response = new RequestBuilder(mockMvc)
                 .authorization(RequestBuilder.Authorization.BASIC)
                 .credentials(VALID_CREDENTIALS)
                 .perform(post("/login"))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
+                .andReturn().getResponse();
 
-        assertEquals(VALID_CREDENTIALS.username(), jwtDecryptor.extractUsername(receivedToken));
+        var parts = RequestUtils.getBearerPartsFromSetCookies(response.getHeaders(HttpHeaders.SET_COOKIE));
+
+        String token;
+        if (parts.getFirst().getFirst().equals("BearerHead")) {
+            token = parts.getFirst().getSecond() + parts.get(1).getSecond();
+        } else {
+            token = parts.get(1).getSecond() + parts.getFirst().getSecond();
+        }
+
+        assertEquals(VALID_CREDENTIALS.username(), jwtDecryptor.extractUsername(token));
     }
 
     @ParameterizedTest

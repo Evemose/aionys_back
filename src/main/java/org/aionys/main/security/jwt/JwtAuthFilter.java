@@ -2,6 +2,7 @@ package org.aionys.main.security.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
@@ -40,7 +41,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             auth = request.getHeader("Authorization");
         }
         if (auth == null) {
-            auth = getBearerFromCookies(request);
+            auth = getBearerFromCookies(request.getCookies());
         }
         if (auth != null && auth.startsWith("Bearer ")) {
             var jwt = auth.substring(7);
@@ -53,9 +54,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // currently the bearer consists of two cookies, this method is used to combine them
-    private static String getBearerFromCookies(HttpServletRequest request) {
-        var cookies = request.getCookies();
+    private String getBearerFromCookies(Cookie... cookies) {
         StringBuilder tokenBuilder = null;
         if (cookies != null) {
             tokenBuilder = new StringBuilder();
@@ -79,4 +78,5 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
         return tokenBuilder == null ? null : tokenBuilder.insert(0, "Bearer ").toString();
     }
+
 }

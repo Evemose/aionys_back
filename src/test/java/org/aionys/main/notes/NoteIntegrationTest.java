@@ -32,7 +32,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class NoteIntegrationTest {
 
     private static final String CONTROLLER_PATH = "/notes";
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @Autowired
     private MockMvc mockMvc;
 
