@@ -86,16 +86,15 @@ public final class RequestBuilder {
         authCookies = CompletableFuture.supplyAsync(
                 () -> {
                     try {
-                        return mockMvc.perform(post("/login")
+                        var response = mockMvc.perform(post("/login")
                                         .header(
                                                 HttpHeaders.AUTHORIZATION,
                                                 credentialsAsBase
-                                        )).andReturn().getResponse().getHeaders(HttpHeaders.SET_COOKIE)
+                                        )).andReturn().getResponse().getHeaders(HttpHeaders.SET_COOKIE);
+
+                        return RequestUtils.getBearerPartsFromSetCookies(response)
                                 .stream()
-                                .flatMap(header -> Arrays.stream(header.split(";")))
-                                .filter(e -> e.matches("Bearer[a-zA-Z]+=.*"))
-                                .map(e -> e.split("="))
-                                .map(e -> new Cookie(e[0], e[1]))
+                                .map(pair -> new Cookie(pair.getFirst(), pair.getSecond()))
                                 .toArray(Cookie[]::new);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
