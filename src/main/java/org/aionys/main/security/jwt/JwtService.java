@@ -52,11 +52,11 @@ class JwtService implements JwtDecryptor, JwtCookieFactory {
         var bearerCookie = new Cookie("BearerHead", jwt.substring(0, jwt.length()/2));
         bearerCookie.setHttpOnly(true);
         bearerCookie.setPath("/");
-        bearerCookie.setMaxAge((int) jwtExpiration);
+        bearerCookie.setMaxAge((int) jwtExpiration / 1000);
 
         var sessionCookie = new Cookie("BearerTail", jwt.substring(jwt.length()/2));
         sessionCookie.setPath("/");
-        sessionCookie.setMaxAge((int) jwtExpiration);
+        sessionCookie.setMaxAge((int) jwtExpiration / 1000);
 
         return List.of(bearerCookie, sessionCookie);
     }
