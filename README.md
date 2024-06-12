@@ -47,23 +47,6 @@ To remove all containers, networks, and volumes created by Docker Compose, use:
 docker-compose down -v
 ```
 
-## Using .env
-To use an `.env` file for environment variables, add the `env_file` section in the `docker-compose.yml`:
-
-```yaml
-services:
-    main:
-        image: "back-dev"
-        build:
-            context: .
-            dockerfile: Dockerfile
-        container_name: "back-dev"
-        ports:
-            - "8080:8080"
-        env_file:
-            - .env
-```
-
 ## Troubleshooting
 If you encounter issues, please ensure:
 - Docker and Docker Compose are correctly installed and running.
