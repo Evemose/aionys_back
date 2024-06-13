@@ -46,9 +46,8 @@ class UserController {
 
         // for dev profile, return the token in the body so it can be used in swagger or postman easily
         if (environment.matchesProfiles("dev")) {
-            return responseEntityBuilder.body(
-                    cookies.stream().filter(c -> c.getName().equals("Bearer")).findFirst().orElseThrow().getValue()
-            );
+            var token = cookies.get(0).getValue() + cookies.get(1).getValue();
+            return responseEntityBuilder.body(token);
         }
 
         return responseEntityBuilder.build();

@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +19,7 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtDecryptor jwtService;
@@ -36,28 +38,33 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
-        String auth = null;
-        if (environment.matchesProfiles("dev")) {
-            auth = request.getHeader("Authorization");
+        try {
+            String auth = null;
+            if (environment.matchesProfiles("dev")) {
+                auth = request.getHeader("Authorization");
+            }
+            if (auth == null) {
+                auth = getBearerFromCookies(request.getCookies());
+            }
+            if (auth != null && auth.startsWith("Bearer ")) {
+                var jwt = auth.substring(7);
+                var username = jwtService.extractUsername(jwt);
+                var user = userDetailsService.loadUserByUsername(username);
+                SecurityContextHolder.getContext().setAuthentication(
+                        new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
+                );
+            }
+
+        } catch (Exception e) {
+            log.info("Failed to authenticate user", e);
+        } finally {
+            filterChain.doFilter(request, response);
         }
-        if (auth == null) {
-            auth = getBearerFromCookies(request.getCookies());
-        }
-        if (auth != null && auth.startsWith("Bearer ")) {
-            var jwt = auth.substring(7);
-            var username = jwtService.extractUsername(jwt);
-            var user = userDetailsService.loadUserByUsername(username);
-            SecurityContextHolder.getContext().setAuthentication(
-                    new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
-            );
-        }
-        filterChain.doFilter(request, response);
     }
 
     private String getBearerFromCookies(Cookie... cookies) {
-        StringBuilder tokenBuilder = null;
+        StringBuilder tokenBuilder = new StringBuilder();
         if (cookies != null) {
-            tokenBuilder = new StringBuilder();
             String tailIfEncountered = null;
             for (var c : cookies) {
                 if (c.getName().equals("BearerHead")) {
@@ -76,7 +83,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
             }
         }
-        return tokenBuilder == null ? null : tokenBuilder.insert(0, "Bearer ").toString();
+        return tokenBuilder.isEmpty() ? null : tokenBuilder.insert(0, "Bearer ").toString();
     }
 
 }

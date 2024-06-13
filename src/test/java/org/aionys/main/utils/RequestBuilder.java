@@ -9,7 +9,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -87,10 +86,10 @@ public final class RequestBuilder {
                 () -> {
                     try {
                         var response = mockMvc.perform(post("/login")
-                                        .header(
-                                                HttpHeaders.AUTHORIZATION,
-                                                credentialsAsBase
-                                        )).andReturn().getResponse().getHeaders(HttpHeaders.SET_COOKIE);
+                                .header(
+                                        HttpHeaders.AUTHORIZATION,
+                                        credentialsAsBase
+                                )).andReturn().getResponse().getHeaders(HttpHeaders.SET_COOKIE);
 
                         return RequestUtils.getBearerPartsFromSetCookies(response)
                                 .stream()

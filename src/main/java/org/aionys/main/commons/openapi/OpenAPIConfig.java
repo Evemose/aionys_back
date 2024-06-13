@@ -26,31 +26,6 @@ import java.util.function.Function;
 )
 class OpenAPIConfig {
 
-    @Bean
-    public OpenAPI customize() {
-        final var securitySchemeName = "bearerAuth";
-        return new OpenAPI().components(
-                new Components().addSecuritySchemes(
-                        securitySchemeName,
-                        new SecurityScheme()
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT")
-                )
-        ).security(List.of(new SecurityRequirement().addList(securitySchemeName)));
-    }
-
-    @Bean
-    public OpenApiCustomizer customizer() {
-        return openApi -> {
-            removeRedundantCodesForGet(openApi);
-            removeRedundantCodesFromPost(openApi);
-            removeRedundantForDelete(openApi);
-            addUnauthorizedAndForbidden(openApi);
-            removeNotFoundFromGetAll(openApi);
-        };
-    }
-
     private static void removeNotFoundFromGetAll(OpenAPI openApi) {
         openApi.getPaths().values().forEach(pathItem -> {
                     if (pathItem.getGet() != null
@@ -101,5 +76,30 @@ class OpenAPIConfig {
 
                         )
                 ));
+    }
+
+    @Bean
+    public OpenAPI customize() {
+        final var securitySchemeName = "bearerAuth";
+        return new OpenAPI().components(
+                new Components().addSecuritySchemes(
+                        securitySchemeName,
+                        new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                )
+        ).security(List.of(new SecurityRequirement().addList(securitySchemeName)));
+    }
+
+    @Bean
+    public OpenApiCustomizer customizer() {
+        return openApi -> {
+            removeRedundantCodesForGet(openApi);
+            removeRedundantCodesFromPost(openApi);
+            removeRedundantForDelete(openApi);
+            addUnauthorizedAndForbidden(openApi);
+            removeNotFoundFromGetAll(openApi);
+        };
     }
 }
