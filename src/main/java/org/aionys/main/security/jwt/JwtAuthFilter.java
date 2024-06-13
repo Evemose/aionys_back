@@ -38,14 +38,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
+        String auth = null;
+        if (environment.matchesProfiles("dev")) {
+            auth = request.getHeader("Authorization");
+        }
+        if (auth == null) {
+            auth = getBearerFromCookies(request.getCookies());
+        }
         try {
-            String auth = null;
-            if (environment.matchesProfiles("dev")) {
-                auth = request.getHeader("Authorization");
-            }
-            if (auth == null) {
-                auth = getBearerFromCookies(request.getCookies());
-            }
             if (auth != null && auth.startsWith("Bearer ")) {
                 var jwt = auth.substring(7);
                 var username = jwtService.extractUsername(jwt);
@@ -56,7 +56,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
 
         } catch (Exception e) {
-            log.info("Failed to authenticate user", e);
+            log.info("Failed to authenticate user {}: {}", auth, e.getMessage());
         } finally {
             filterChain.doFilter(request, response);
         }
