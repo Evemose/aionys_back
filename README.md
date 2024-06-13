@@ -17,7 +17,7 @@ back/
 
 ## How to Build and Run
 
-# 1. Clone the Repository
+### 1. Clone the Repository
 Clone the parent repository along with its submodules:
 
 ```sh
@@ -25,7 +25,7 @@ git clone --recurse-submodules <repository-url>
 cd project-root/back
 ```
 
-# 2. Create the .env File
+### 2. Create the .env File
 Copy the .env-template file to create the required .env file:
 
 ```sh
@@ -38,7 +38,7 @@ Ensure the .env file contains the necessary environment variables. Modify values
 
 When running in Docker (or in eny environment where frontend and backend apps are running on different hosts), set SPRING_ACTIVE to dev in your .env file due to specifics of cross-origin cookie sharing requiring HTTPS communication for SameSite=None cookies used for authentication.
 
-# 3. Build and Run
+### 3. Build and Run
 Navigate to the `back` directory and build the Docker image:
 
 ```sh
