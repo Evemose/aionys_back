@@ -52,6 +52,7 @@ docker-compose -f docker-compose.yml up --build
 ```
 
 ## Stopping the Containers
+
 To stop the running containers, use the following command:
 
 ```sh
@@ -59,6 +60,7 @@ docker-compose down
 ```
 
 ## Cleaning Up
+
 To remove all containers, networks, and volumes created by Docker Compose, use:
 
 ```sh
