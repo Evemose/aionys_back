@@ -1,9 +1,11 @@
 package org.aionys.main.security.users;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.aionys.main.images.Image;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -34,6 +36,10 @@ public class User implements UserDetails {
     @NotBlank
     @NonNull
     private String password;
+
+    @Nullable
+    @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
+    private Image profilePicture;
 
     private boolean enabled = true;
 

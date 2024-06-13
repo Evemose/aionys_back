@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.aionys.main.commons.valiation.groups.Full;
+import org.aionys.main.commons.valiation.groups.Partial;
 import org.aionys.main.security.jwt.JwtCookieFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
@@ -96,6 +98,19 @@ class UserController {
     public ResponseEntity<Void> delete(Principal principal) {
         userService.deleteByUsername(principal.getName());
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/me")
+    @SecurityRequirements
+    @Operation(summary = "Perform partial update of the current user")
+    public ResponseEntity<GetUserDTO> update(
+            @RequestBody @Validated(Partial.class) PostUserDTO dto,
+            Principal principal) {
+        var entity = userService.findByUsername(principal.getName()).orElseThrow(() ->
+                new EntityNotFoundException("User with username %s not found".formatted(principal.getName()))
+        );
+        userMapper.mapNonNullIntoEntity(dto, entity);
+        return ResponseEntity.ok(userMapper.toDTO(userService.update(entity)));
     }
 
 }

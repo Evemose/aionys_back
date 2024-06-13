@@ -1,5 +1,6 @@
 package org.aionys.main.security.users;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,7 +22,15 @@ class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public User save(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.saveAndFlush(user); // save so entity is audited
+        return userRepository.saveAndFlush(user); // flush so entity is audited
+    }
+
+    @Override
+    public User update(User user) {
+        if (!userRepository.existsById(user.getId())) {
+            throw new EntityNotFoundException("User with id " + user.getId() + " not found");
+        }
+        return userRepository.saveAndFlush(user);
     }
 
     @Override

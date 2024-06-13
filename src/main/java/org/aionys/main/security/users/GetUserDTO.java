@@ -9,12 +9,14 @@ import java.time.LocalDateTime;
         example = """
                 {
                     "username": "uniqueUsername",
+                    "profilePicture": "http://localhost:8080/images/1",
                     "createdAt": "2021-08-01T12:00:00",
                     "lastModifiedAt": "2021-08-01T12:00:00"
                 }
                 """)
 record GetUserDTO(
         String username,
+        String profilePicture,
         LocalDateTime createdAt,
         LocalDateTime lastModifiedAt
 ) {

@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
                     "title": "Note title",
                     "content": "Note content",
                     "createdAt": "2021-10-10T10:10:10",
-                    "lastModifiedAt": "2021-10-10T10:10:10"
+                    "lastModifiedAt": "2021-10-10T10:10:10",
+                    "profilePicture": "base64-encoded-image"
                 """)
 record GetNoteDTO(
         Long id,

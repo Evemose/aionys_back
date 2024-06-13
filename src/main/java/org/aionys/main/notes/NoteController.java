@@ -42,6 +42,10 @@ class NoteController {
         );
     }
 
+    // Task specified PUT endpoint in requirements, but I think that PATCH endpoint
+    // is much better in matching semantics of note update.
+    // It is a common case to update only title/content/any other potential field
+    // and not the whole note, which is the case for PATCH.
     @PatchMapping("/{id}")
     @Operation(summary = "Perform a partial update of a note")
     public ResponseEntity<GetNoteDTO> update(

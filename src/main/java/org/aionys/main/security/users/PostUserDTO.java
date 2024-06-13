@@ -22,6 +22,13 @@ record PostUserDTO(
                 "one uppercase letter, one lowercase letter, one digit and one special character",
                 example = "pass123G$%!")
         @Password(groups = {Full.class, Partial.class})
-        String password
+        String password,
+
+        @Schema(description = "Base64 encoded profile picture", example = "data:image/png;base64,...")
+        @NullOrNotBlank(groups = Partial.class)
+        String profilePicture
 ) {
+    PostUserDTO(String username, String password) {
+        this(username, password, null);
+    }
 }
